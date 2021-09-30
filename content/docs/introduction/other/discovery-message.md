@@ -1,7 +1,7 @@
 ---
 title: "Discovery相关定义"
 linkTitle: "Discovery相关定义"
-weight: 304
+weight: 1120
 date: 2021-09-28
 description: >
   Discovery相关定义
