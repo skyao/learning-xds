@@ -16,7 +16,9 @@ description: >
 
 ### 文档
 
-
+- [Envoy 官方文档](https://www.envoyproxy.io/docs)：英文版
+- [Envoy 1.7官方文档中文版](https://www.servicemesher.com/envoy/):  servicemesher社区翻译的envoy文档，基于 Envoy v1.7，版本比较旧。
+- [Envoy 官方文档中文版](https://cloudnative.to/envoy/)： 云原生社区组织翻译的文档，进行中，基于Envoy v1.16
 
 ## 社区资料
 
