@@ -44,9 +44,9 @@ Envoy在启动时获取所有Listener和Cluster资源。然后，它获取 Liste
 
 一个非代理客户端，如gRPC，可能会从获取它感兴趣的特定Listener资源开始。然后获取这些监听器资源所需的RouteConfiguration资源，接着是这些RouteConfiguration资源所需的任何 Cluster 资源，然后是 Cluster 资源所需的ClusterLoadAssignment资源。实际上，最初的Listener资源是客户配置树的根。
 
-## xDS传输协议的变体
+### xDS传输协议的变体
 
-### 四种变体
+#### 四种变体
 
 通过流式gRPC使用的xDS传输协议有四种变体，它们涵盖了两个维度的所有组合。
 
@@ -64,7 +64,7 @@ Envoy在启动时获取所有Listener和Cluster资源。然后，它获取 Liste
 
 4. 增量ADS：增量，所有资源类型的聚合流
 
-### 每种变体的RPC服务和方法
+#### 每种变体的RPC服务和方法
 
 对于非聚合协议变体，每种资源类型都有一个单独的RPC服务。这些RPC服务中的每一个都可以为全量和增量协议变体提供方法。下面是每种资源类型的RPC服务和方法：
 
@@ -86,25 +86,25 @@ Envoy在启动时获取所有Listener和Cluster资源。然后，它获取 Liste
 
 对于所有的增量方法，请求类型是DeltaDiscoveryRequest，响应类型是DeltaDiscoveryResponse。
 
-### 配置要使用的变体
+#### 配置要使用的变体
 
 在xDS API中，ConfigSource消息表明如何获得特定类型的资源。如果ConfigSource包含一个gRPC ApiConfigSource，它指向管理服务器的上游集群；这将为每个xDS资源类型启动一个独立的双向gRPC流，有可能到不同的管理服务器。如果ConfigSource包含AggregatedConfigSource，它告诉客户端使用ADS。
 
 目前，客户端被期望得到一些本地配置，告诉它如何获得 Listener 和 Cluster 资源。Listener 资源可能包括一个表明如何获得RouteConfiguration资源的ConfigSource，而 Cluster 资源可能包括一个表明如何获得ClusterLoadAssignment资源的ConfigSource。
 
-#### 客户端配置
+##### 客户端配置
 
 在Envoy中，bootstrap文件包含两个ConfigSource消息，一个表示如何获得Listener资源，另一个表示如何获得Cluster资源。它还包含一个单独的ApiConfigSource消息，指示如何联系ADS服务器，只要ConfigSource消息（无论是在bootstrap文件中还是在从管理服务器获得的Listener或Cluster资源中）包含AggregatedConfigSource消息，就会用到它。
 
 在使用xDS的gRPC客户端中，只支持ADS，bootstrap文件包含ADS服务器的名称，它将用于所有资源。Listener和Cluster资源中的ConfigSource消息必须包含AggregatedConfigSource消息。
 
-## xDS传输协议
+### xDS传输协议
 
-### 传输API版本
+#### 传输API版本
 
 除了上面描述的资源类型版本外，xDS协议还有一个与之相关的传输版本。这为诸如DiscoveryRequest和DiscoveryResponse之类的消息提供了类型版本。它也被编码在gRPC方法名称中，因此服务器可以根据客户端调用的方法来确定它的版本。
 
-### 基本协议概述
+#### 基本协议概述
 
 每个xDS流以来自客户端的DiscoveryRequest开始，其中指定了要订阅的资源列表、与订阅的资源相对应的type URL、节点标识符，以及一个可选的资源类型实例版本，表示客户端已经看到的资源类型的最新版本（详见 ACK/NACK和资源类型实例版本）。
 
@@ -116,7 +116,7 @@ Envoy在启动时获取所有Listener和Cluster资源。然后，它获取 Liste
 
 只有流上的第一个请求被保证携带节点标识符。同一流上的后续发现请求可能携带一个空的节点标识符。无论同一流上的发现响应是否被接受，这都是真实的。如果在流上出现不止一次，节点标识符应该始终是相同的。因此，只检查第一个消息的节点标识符就足够了。
 
-### ACK/NACK和资源类型实例版本
+#### ACK/NACK和资源类型实例版本
 
 每个xDS资源类型都有一个版本字符串，表示该资源类型的版本。每当该类型的一个资源发生变化时，版本就会改变。
 
@@ -155,13 +155,13 @@ nonce: A
 
 在处理完 DiscoveryResponse 后，Envoy将在流上发送一个新的请求，指定最后成功应用的版本和管理服务器提供的nonce。版本为Envoy和管理服务器提供了一个关于当前应用的配置的共享概念，以及一个用于 ACK/NACK 配置更新的机制。
 
-#### ACK
+##### ACK
 
 如果更新被成功应用，version_info 将是X，如顺序图中所示。
 
 ![](images/simple-ack.svg)
 
-#### NACK
+##### NACK
 
 如果Envoy拒绝配置更新X，它将回复弹出的 error_detail 和它之前的版本，在这种情况下是空的初始版本。error_detail有更多的细节，围绕着消息字段中弹出的确切错误信息:
 
@@ -180,7 +180,7 @@ nonce: A
 
 ![](images/error-detail-nack.svg)
 
-#### ACK和NACK语义摘要
+##### ACK和NACK语义摘要
 
 - xDS客户端应该对从管理服务器收到的每个DiscoveryResponse进行ACK或NACK。response_nonce字段告诉服务器，ACK或NACK与哪个响应相关。
 
@@ -188,13 +188,13 @@ nonce: A
 
 - NACK标志着不成功的配置，并由 error_detail 字段的存在表示。version_info 表示客户机正在使用的最新版本，尽管在客户机从现有版本订阅了一个新资源而该新资源无效的情况下，该版本可能不是旧版本（见上面的例子）。
 
-### 何时发送更新
+#### 何时发送更新
 
 管理服务器应该只在DiscoveryResponse中的资源发生变化时向Envoy客户端发送更新。Envoy会在任何DiscoveryResponse被接受或拒绝后立即用包含ACK/NACK的DiscoveryRequest来回复。如果管理服务器提供相同的资源集，而不是等待发生变化，就会在客户端和管理服务器上造成不必要的工作，这可能会严重影响性能。
 
 在流中，新的 DiscoveryRequests 会取代先前具有相同资源类型的任何 DiscoveryRequests。这意味着管理服务器只需要对每个流中任何给定资源类型的最新DiscoveryRequest作出响应。
 
-### 客户端如何指定返回哪些资源？
+#### 客户端如何指定返回哪些资源？
 
 xDS请求允许客户指定一组资源名称，作为对服务器的提示，说明客户对哪些资源感兴趣。在SotW全量协议变体中，这是通过在 DiscoveryRequest 中指定的资源名称完成的；在增量协议变体中，这是通过 DeltaDiscoveryRequest 中的 resource_names_subscribe 和 resource_names_unsubscribe 字段完成的。
 
@@ -224,11 +224,11 @@ xDS请求允许客户指定一组资源名称，作为对服务器的提示，�
 
 - 客户端发送一个请求，并将 resource_names_unsubscribe 设置为 "A"。服务器将此解释为取消对 "A" 的订阅（即，客户现在已经取消了对所有资源的订阅）。虽然现在订阅的资源集是空的，就像初始请求后一样，但它不会被解释为通配符订阅，因为之前在这个流上已经有一个针对这个资源类型的请求设置了 resource_names_subscribe 字段。
 
-### 客户端行为
+#### 客户端行为
 
 Envoy将始终使用通配符来订阅 Listener 和 Cluster 资源。然而，其他xDS客户端（如使用xDS的gRPC客户端）可以明确订阅这些资源类型的特定资源名称，例如，如果他们只有一个子监听器，并且已经从一些带外配置中知道它的名称。
 
-### 将资源分组到响应中
+#### 将资源分组到响应中
 
 在增量协议的变体中，服务器在其自身的响应中发送每个资源。这意味着，如果服务器之前发送了100个资源，而其中只有一个资源发生了变化，那么它可以发送一个仅包含变化的资源的响应；它不需要重新发送未发生变化的99个资源，而且客户端不得删除未变化的资源。
 
@@ -236,17 +236,17 @@ Envoy将始终使用通配符来订阅 Listener 和 Cluster 资源。然而，�
 
 请注意，所有的协议变体都是以整个命名的资源为单位进行操作。没有任何机制可以提供命名资源中重复字段的增量更新。**最值得注意的是，目前还没有机制来增量更新EDS响应中的单个端点。**
 
-### 重复的资源名称
+#### 重复的资源名称
 
 服务器发送一个包含两次相同资源名称的响应是一个错误。客户端应该拒绝包含同一资源名称的多个实例的响应。
 
-### 删除资源
+#### 删除资源
 
 在增量协议的变体中，服务器通过响应中的 remove_resources 字段向客户端发出信号，表示应该删除某个资源。这告诉客户端从其本地缓存中删除该资源。
 
 在SotW全量协议的变体中，删除资源的标准更加复杂。对于 Listener 和 Cluster 类型，如果以前看到的资源没有出现在新的响应中，这表明该资源已被删除，客户端必须删除它；不包含任何资源的响应意味着要删除该类型的所有资源。然而，对于其他资源类型，API没有提供任何机制让服务器告诉客户端资源已经被删除；相反，删除是通过父资源被改变为不再引用子资源来隐含地表示的。例如，当客户机收到 LDS 更新，删除先前指向 RouteConfiguration A的Listener 时，如果没有其他 Listener 指向 RouteConfiguration A，那么客户机可能会删除A。对于这些资源类型，从客户机的角度来看，空的 DiscoveryResponse 实际上是一个无用功。
 
-### 了解所请求的资源何时不存在？
+#### 了解所请求的资源何时不存在？
 
 SotW全量协议的变体没有提供任何明确的机制来确定所请求的资源何时不存在。
 
@@ -258,7 +258,7 @@ Listener 和 Cluster 资源类型的响应必须包括客户端请求的所有�
 
 请注意，即使所请求的资源在客户端请求时不存在，该资源也可能在任何时候被创建。管理服务器必须记住客户端请求的资源集，如果这些资源中的一个后来突然出现，服务器必须向客户端发送一个更新，告知它新的资源。最初看到一个不存在的资源的客户必须准备好随时创建该资源。
 
-### 取消对资源的订阅
+#### 取消对资源的订阅
 
 在增量协议变体中，可以通过 resource_names_unsubscribe 字段来取消对资源的订阅。
 
@@ -266,7 +266,7 @@ Listener 和 Cluster 资源类型的响应必须包括客户端请求的所有�
 
 请注意，对于客户端使用 "通配符" 订阅的 Listener 和 Cluster  资源类型（详见客户端如何指定返回哪些资源），被订阅的资源集由服务器而不是客户端决定，因此客户端不能单独取消订阅这些资源；它只能从通配符中作为一个整体取消订阅。
 
-### 在一个流中请求多个资源
+#### 在一个流中请求多个资源
 
 对于 EDS/RDS，Envoy可以为每个给定类型的资源生成一个不同的流（例如，如果每个ConfigSource都有自己不同的上游集群的管理服务器），或者在给定资源类型的多个资源请求被送到同一个管理服务器时，可以将它们合并在一起。虽然这有待于具体实施，但管理服务器应该能够在每个请求中处理一个或多个给定资源类型的资源名称。下面两个序列图对获取两个EDS资源 `{foo, bar}` 有效。
 
@@ -274,7 +274,7 @@ Listener 和 Cluster 资源类型的响应必须包括客户端请求的所有�
 
 ![](images/eds-distinct-stream.svg)
 
-### 资源更新
+#### 资源更新
 
 如上所述，Envoy可能会更新它在每个 ACK/NACK 特定 DiscoveryResponse 的 DiscoveryRequest 中呈现给管理服务器的资源名称列表。此外，Envoy以后可能会在给定的 `system_info` 上发出额外的DiscoveryRequest，以便用新的资源提示来更新管理服务器。例如，如果Envoy处于EDS的X版本，并且只知道集群foo，但是后来收到CDS更新，并且还知道了bar，那么它可能会为X发出一个额外的 DiscoveryRequest，将 `{foo,bar}` 作为 `resource_names` 。
 
@@ -395,7 +395,7 @@ static_resources:
       tcp_keepalive: {}
 ```
 
-## 递增xDS
+## 递增的xDS
 
 增量xDS是一个单独的xDS端点：
 
@@ -427,5 +427,32 @@ DeltaDiscoveryRequest可以在以下情况下发送：
 
 ![](images/incremental-reconnect.svg)
 
+#### 资源名称
 
+资源由资源名称或别名来识别。如果存在资源的别名，可以通过 DeltaDiscoveryResponse 的资源中的别名字段来识别。资源名称将在DeltaDiscoveryResponse的资源中的名称字段中返回。
 
+#### 订阅资源
+
+客户端可以在 DeltaDiscoveryRequest 的 resource_names_subscribe 字段中发送一个别名或资源的名称，以便订阅资源。资源的名称和别名都应该被检查，以确定有关实体是否被订阅了。
+
+resource_names_subscribe 字段可能包含服务器认为客户已经订阅的资源名称，而且还拥有最新的版本。然而，服务器仍然必须在响应中提供这些资源；由于服务器隐藏的实现细节，客户可能已经 "忘记"了这些资源，尽管表面上仍然被订阅。
+
+#### 取消订阅资源
+
+当客户对某些资源失去兴趣时，它将通过 DeltaDiscoveryRequest 的 resource_names_unsubscribe 字段来表示。与 resource_names_subscribe 一样，这些可能是资源名称或别名。
+
+resource_names_unsubscribe 字段可能包含多余的资源名称，服务器认为客户端已经不订阅这些资源了。服务器必须干净利落地处理这样的请求；它可以简单地忽略这些幽灵式的取消订阅。
+
+在大多数情况下（例外情况见下文），如果一个请求除了取消订阅一个资源外什么都不做，服务器不需要发送任何响应；特别是，服务器一般不需要在remove_resources字段中发送一个带有取消订阅的资源名称的响应。
+
+然而，上述情况有一个例外。当客户端有一个通配符订阅（"*"）和对另一个特定资源名称的订阅时，有可能该特定资源名称也包括在通配符订阅中，所以如果客户端取消对该特定资源名称的订阅，它不知道是否要继续缓存该资源。为了解决这个问题，服务器必须发送一个响应，在 remove_resources 字段（如果它不包括在通配符中）或resources字段（如果它包括在通配符中）中包括特定资源。
+
+#### 了解所请求的资源何时不存在？
+
+当客户端订阅的资源不存在时，服务器将发送一个 DeltaDiscoveryResponse 消息，在 removed_resources 字段中包含该资源的名称。这允许客户端快速确定资源是否存在，而无需像SotW协议变体中那样等待超时。然而，我们仍然鼓励客户使用超时，以防止管理服务器未能及时发送响应的情况。
+
+## REST-JSON轮询订阅
+
+通过REST端点的同步（长）轮询也可用于xDS单体API。上述消息的排序是类似的，只是没有向管理服务器保持持久的流。预计在任何时间点都只有一个未完成的请求，因此在REST-JSON中，响应非ce是可选的。proto3的JSON规范性转换被用来对DiscoveryRequest和DiscoveryResponse消息进行编码。ADS不适用于REST-JSON轮询。
+
+当轮询周期被设置为一个较小的值，并打算进行长时间的轮询时，那么还需要避免发送DiscoveryResponse，除非通过资源更新对基础资源进行了更改。

@@ -35,15 +35,30 @@ xDS 是指 "X Discovery Service"，这里的 "X" 代指多种服务发现协议�
 > 1. SDS 在 xDS v1版本中指的是 Service Discovery Service，后来 SDS 改名 Endpoint Discovery Service/EDS。再后来增加了 Security Discovery Service.
 > 2. 后来新增了一些协议，名字不再是 Discovery Service，但也归入xDS的名下
 
-### xDS版本
+### xDS的版本
 
 目前 xDS 主要有三个版本：
 
-- v1: 
-- v2: 将于 2020 年底停止使用
-- v3: 目前正在支持的版本
+- v1: 最早的版本，基于传统的REST-JSON API。
+- v2: 基于 Protobuf 和双 REST/gRPC ，v2 API在 2020 年底停止使用，在2021年初完全停止支持
+- v3: 目前正在支持的版本。
 
+参见：[Supported API versions — envoy 1.20.0 documentation (envoyproxy.io)](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)
 
+### xDS的格式
 
+https://www.envoyproxy.io/docs/envoy/latest/configuration/overview/introduction
 
+Envoy xDS APIs在api树中被定义为proto3 Protocol Buffer。它们支持：
 
+- 通过gRPC流式交付xDS API更新。这减少了资源需求，可以降低更新延迟。
+
+- 一个新的REST-JSON API，其中的JSON/YAML格式是通过proto3的canonical JSON映射机械地导出的。
+
+- 通过文件系统、REST-JSON或gRPC端点交付更新。
+
+- 通过扩展的端点分配API和向管理服务器报告负载和资源利用情况来实现高级负载平衡。
+
+- 需要时更强的一致性和排序属性。这些API仍然保持基线最终一致性模型。
+
+有关Envoy和管理服务器之间xDS消息交换方面的进一步细节，请参见xDS协议描述。
