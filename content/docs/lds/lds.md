@@ -26,23 +26,3 @@ LDS是Listener Discovery Service的首字母缩写。
 
 > **注意**： 任何在 Envoy 配置中静态定义的监听器都不能通过 LDS API 进行修改或删除。
 
-## LDS定义
-
-https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/lds.proto
-
-
-
-```protobuf
-service ListenerDiscoveryService {
-  rpc StreamListeners(stream DiscoveryRequest) returns (stream DiscoveryResponse) {
-  }
-
-  rpc FetchListeners(DiscoveryRequest) returns (DiscoveryResponse) {
-    option (google.api.http) = {
-      post: "/v2/discovery:listeners"
-      body: "*"
-    };
-  }
-}
-```
-

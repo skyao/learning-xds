@@ -1,15 +1,13 @@
 ---
-title: "xDS API中Listener相关的文档"
-linkTitle: "Listener相关的文档"
+title: "[译]Envoy中的Listener"
+linkTitle: "[译]Listener"
 weight: 402
 date: 2021-09-28
 description: >
-  介绍xDS API中Listener的概念
+  翻译Envoy中的Listener介绍内容
 ---
 
-## 文档
-
-### envoy官方文档中的Listener说明
+https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listeners
 
 **Listeners**
 
@@ -39,5 +37,5 @@ Envoy 还支持 UDP 监听器和 UDP 监听过滤器 。 每个工作线程都�
 
 ## 参考文档
 
-- https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listeners: envoy官方文档中对Listener的说明
-- https://cloudnative.to/envoy/intro/arch_overview/listeners/listeners.html: 上文的中文翻译
+- https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listeners envoy官方文档中对Listener的说明
+- https://cloudnative.to/envoy/intro/arch_overview/listeners/listeners.html 上文的中文翻译

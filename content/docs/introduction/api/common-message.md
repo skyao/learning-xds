@@ -283,3 +283,42 @@ message ControlPlane {
 | :----------- | :------- | :----------------------------------------------------------- |
 | `identifier` | `string` | 一个不透明的控制平面标识符，唯一标识控制平面的一个实例。这可以用来识别Envoy连接到哪个控制平面实例。 |
 
+## type_url取值
+
+以下是几个常见的 type_url: 
+
+| 资源名                   | type_url的值                                                 |
+| ------------------------ | ------------------------------------------------------------ |
+| Listener                 | "type.googleapis.com/envoy.config.listener.v3.Listener"      |
+| Cluster                  | "type.googleapis.com/envoy.config.cluster.v3.Cluster"        |
+| ClusterLoadAssignment    | "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment" |
+| Secret                   | "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.Secret" |
+| RouteConfiguration       | "type.googleapis.com/envoy.config.route.v3.RouteConfiguration" |
+| VirtualHost              | "type.googleapis.com/envoy.config.route.v3.VirtualHost"      |
+| ScopedRouteConfiguration | "type.googleapis.com/envoy.config.route.v3.ScopedRouteConfiguration" |
+| Runtime                  | "type.googleapis.com/envoy.service.runtime.v3.Runtime"       |
+
+type_url 取值的规律是 `"type.googleapis.com" 前缀 + 资源名称`，其在envoy中的实现代码在头文件 [source/common/config/resource_name.h](https://github.com/envoyproxy/envoy/blob/main/source/common/config/resource_name.h) 中:
+
+```c++
+/**
+ * Get type url from api type.
+ */
+template <typename Current> std::string getTypeUrl() {
+  return "type.googleapis.com/" + getResourceName<Current>(); 
+}
+```
+
+如 Listener 的定义在 proto 文件 `https://github.com/envoyproxy/envoy/blob/main/api/envoy/config/listener/v3/listener.proto` 中,
+
+```protobuf
+syntax = "proto3";
+
+package envoy.config.listener.v3;
+
+message Listener {
+......
+}
+```
+
+因此 Listener/LDS 的 type_url 就是 `"type.googleapis.com/envoy.config.listener.v3.Listener"` 。
