@@ -1,11 +1,13 @@
 ---
 title: "[译]Envoy中的Listener Filter"
-linkTitle: "[译]Listener Filter"
-weight: 423
+linkTitle: "Listener Filter概述"
+weight: 421
 date: 2021-10-08
 description: >
   翻译Envoy中的Listener Filter介绍内容
 ---
+
+## 附录：envoy官方文档说明
 
 https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listener_filters
 
@@ -17,7 +19,7 @@ https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listen
 
 监听器过滤器的 API 相对简单，因为最终这些过滤器是在新接收的套接字上操作的。可停止链中的过滤器并继续执行后续的过滤器。这允许去运作更复杂的业务场景，例如调用 限速服务 等。 Envoy 包含多个监听器过滤器，这些过滤器在架构概述以及 配置参考 中都有记录。
 
-## 参考文档
+参考文档:
 
 - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/listeners/listener_filters envoy官方文档中对Listener的说明
 - https://cloudnative.to/envoy/intro/arch_overview/listeners/listener_filters.html 上文的中文翻译

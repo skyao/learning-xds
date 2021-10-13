@@ -1,7 +1,7 @@
 ---
 title: "LDS API中的Listener配置"
 linkTitle: "Listener配置"
-weight: 422
+weight: 462
 date: 2021-09-28
 description: >
   LDS API中的Listener配置
@@ -116,7 +116,7 @@ message Listener {
 | name                                 | string                      | 该监听器的唯一名称。如果没有提供名称，Envoy将为监听器分配一个内部UUID。如果监听器要通过LDS动态更新或删除，必须提供唯一的名字。 |
 | address                              | core.v3.Address, REQUIRED   | 听众应该收听的地址。一般来说，这个地址必须是唯一的，不过这要由操作系统的绑定规则决定。例如，多个监听器可以在Linux上监听端口0，因为实际的端口将由操作系统分配。 |
 | stat_prefix                          | string                      | 可选的前缀，用于监听器的统计信息。如果为空，统计信息将以 `listener.<address as string>` 为根。如果非空，统计信息将以`listener.<stat_prefix>`为根。 |
-| filter_chains                        | FilterChain, REQUIRED       | 考虑用于这个监听器的过滤链列表。最符合 FilterChainMatch 条件的 FilterChain 将用于连接。 |
+| filter_chains                        | FilterChain[], REQUIRED     | 考虑用于这个监听器的过滤链列表。最符合 FilterChainMatch 条件的 FilterChain 将用于连接。 |
 | use_original_dst                     | google.protobuf.BoolValue   | 如果使用iptables重定向连接，代理接收连接的端口可能与原始目标地址不同。当这个标志被设置为 "true" 时，监听器会将重定向的连接交给与原始目标地址相关的监听器。如果没有与原始目标地址相关联的监听器，连接将由接收它的监听器处理。默认为false。 |
 | default_filter_chain                 | FilterChain                 | 如果没有一个过滤器链相匹配，则为默认过滤器链。如果没有提供默认的过滤链，连接将被关闭。在这个字段中，过滤链的匹配被忽略。 |
 | per_connection_buffer_limit_bytes    | UInt32Value                 | 对监听器新建连接的读写缓冲区大小的软限制。如果未指定，则使用实现定义的默认值（1MiB）。 |

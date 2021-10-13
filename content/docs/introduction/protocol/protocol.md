@@ -1,13 +1,13 @@
 ---
-title: "xDS REST和gRPC协议"
-linkTitle: "xDS REST和gRPC协议"
-weight: 1120
+title: "[译]envoy官方文档-xDS REST和gRPC协议"
+linkTitle: "[译]xDS REST和gRPC协议"
+weight: 1520
 date: 2021-09-28
 description: >
-  xDS REST和gRPC协议
+  envoy官方文档翻译-xDS REST和gRPC协议
 ---
 
-> 备注：内容来自 [xDS REST and gRPC protocol](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol)
+> 备注：内容翻译自 [xDS REST and gRPC protocol](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol)
 
 Envoy通过文件系统或通过查询一个或多个管理服务器来发现其各种动态资源。这些发现服务及其相应的API统称为xDS。 通过订阅，指定要监视的文件系统路径，启动gRPC流或轮询REST-JSON URL来请求资源。后两种方法涉及使用DiscoveryRequest proto 载荷发送请求。在所有方法中资源以DiscoveryResponse proto 负载的形式发送。我们在下面讨论每种类型的订阅。
 
@@ -159,13 +159,13 @@ nonce: A
 
 如果更新被成功应用，version_info 将是X，如顺序图中所示。
 
-![](images/simple-ack.svg)
+![](images/protocol/simple-ack.svg)
 
 ##### NACK
 
 如果Envoy拒绝配置更新X，它将回复弹出的 error_detail 和它之前的版本，在这种情况下是空的初始版本。error_detail有更多的细节，围绕着消息字段中弹出的确切错误信息:
 
-![](images/simple-nack.svg)
+![](images/protocol/simple-nack.svg)
 
 在顺序图中，使用以下格式来缩写信息: 
 
@@ -174,11 +174,11 @@ nonce: A
 
 在NACK之后，API更新可能在新的版本Y上成功:
 
-![](images/later-ack.svg)
+![](images/protocol/later-ack.svg)
 
 服务器检测NACK的首选机制是在客户端发送的请求中寻找 error_detail 字段的存在。一些较早的服务器可能会通过查看请求中的 version 和 nonce 来检测NACK：如果请求中的版本不等于服务器用该nonce发送的版本，那么客户就拒绝了最新的版本。然而，这种方法对 LDS 和 CDS 以外的API不起作用，因为客户可能会动态地改变他们所订阅的资源集，除非服务器以某种方式安排在任何一个客户订阅新资源时增加资源类型实例的版本。具体来说，考虑下面的例子:
 
-![](images/error-detail-nack.svg)
+![](images/protocol/error-detail-nack.svg)
 
 ##### ACK和NACK语义摘要
 
@@ -270,23 +270,23 @@ Listener 和 Cluster 资源类型的响应必须包括客户端请求的所有�
 
 对于 EDS/RDS，Envoy可以为每个给定类型的资源生成一个不同的流（例如，如果每个ConfigSource都有自己不同的上游集群的管理服务器），或者在给定资源类型的多个资源请求被送到同一个管理服务器时，可以将它们合并在一起。虽然这有待于具体实施，但管理服务器应该能够在每个请求中处理一个或多个给定资源类型的资源名称。下面两个序列图对获取两个EDS资源 `{foo, bar}` 有效。
 
-![](images/eds-same-stream.svg)
+![](images/protocol/eds-same-stream.svg)
 
-![](images/eds-distinct-stream.svg)
+![](images/protocol/eds-distinct-stream.svg)
 
 #### 资源更新
 
 如上所述，Envoy可能会更新它在每个 ACK/NACK 特定 DiscoveryResponse 的 DiscoveryRequest 中呈现给管理服务器的资源名称列表。此外，Envoy以后可能会在给定的 `system_info` 上发出额外的DiscoveryRequest，以便用新的资源提示来更新管理服务器。例如，如果Envoy处于EDS的X版本，并且只知道集群foo，但是后来收到CDS更新，并且还知道了bar，那么它可能会为X发出一个额外的 DiscoveryRequest，将 `{foo,bar}` 作为 `resource_names` 。
 
-![](images/cds-eds-resources.svg)
+![](images/protocol/cds-eds-resources.svg)
 
 这里可能会出现一个竞赛条件；如果Envoy在X处发出资源提示更新后，但在管理服务器处理该更新之前，它回复了一个新的版本Y，那么该资源提示更新可能会被解释为通过提出一个X `version_info` 来拒绝Y。为了避免这种情况，管理服务器提供了一个nonce，Envoy用它来表示每个DiscoveryRequest所对应的特定DiscoveryResponse。
 
-![](images/update-race.svg)
+![](images/protocol/update-race.svg)
 
 管理服务器不应该为任何具有过期 nonce 的 DiscoveryRequest 发送 DiscoveryResponse。在 DiscoveryResponse 中向Envoy提交了一个较新的nonce后，nonce就会变得过时了。管理服务器不需要发送更新，直到它确定有新的版本可用。早期的一个版本的请求也会变得陈旧。它可以在一个版本上处理多个DiscoveryRequests，直到新版本准备就绪。
 
-![](images/stale-requests.svg)
+![](images/protocol/stale-requests.svg)
 
 上述资源更新顺序的一个含义是，Envoy并不期望它发出的每个DiscoveryRequests都有一个DiscoveryResponse。
 
@@ -336,7 +336,7 @@ Cluster 和 Listener 在为请求提供服务之前要经过预热。这个过�
 
 在管理服务器处于分布式部署的情况下，要提供上述的顺序保证以避免流量下降是很有挑战性的。ADS允许单个管理服务器通过单个gRPC流来提供所有API更新。这提供了对更新进行仔细排序以避免流量下降的能力。有了ADS，单一的流被用于多个独立的 DiscoveryRequest/DiscoveryResponse 序列，通过 type URL进行复用。对于任何给定的 type URL，上述 DiscoveryRequest 和 DiscoveryResponse 消息的排序适用。更新序列的例子可能看起来像：
 
-![](images/ads.svg)
+![](images/protocol/ads.svg)
 
 每个Envoy实例可以使用一个ADS流。
 
@@ -419,13 +419,13 @@ DeltaDiscoveryRequest可以在以下情况下发送：
 
 在这第一个例子中，客户端连接并收到第一个更新，它ACK了。第二个更新失败了，客户端NACK了这个更新。后来，xDS客户端自发地请求 "wc "资源。
 
-![](images/incremental.svg)
+![](images/protocol/incremental.svg)
 
 在重新连接时，增量xDS客户端可以通过在 `initial_resource_versions` 告诉服务器它的已知资源，以避免它们在网络上重新发送。因为没有假设从以前的流中保留状态，重新连接的客户端必须向服务器提供它感兴趣的所有资源名称。
 
 请注意，对于 "通配符" 订阅（详见客户端如何指定返回哪些资源），请求必须在 resource_names_subscribe 字段中指定 "*"，或者（传统行为）请求必须在 resource_names_subscribe 和 resource_names_unsubscribe 中都没有资源。
 
-![](images/incremental-reconnect.svg)
+![](images/protocol/incremental-reconnect.svg)
 
 #### 资源名称
 
