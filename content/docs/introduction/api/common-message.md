@@ -1,7 +1,7 @@
 ---
 title: "xDS中的通用消息定义"
 linkTitle: "通用消息"
-weight: 1402
+weight: 20
 date: 2021-09-30
 description: >
   xDS通用消息定义

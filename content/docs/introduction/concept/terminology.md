@@ -1,7 +1,7 @@
 ---
 title: "xDS基本术语"
 linkTitle: "基本术语"
-weight: 1201
+weight: 10
 date: 2021-09-22
 description: >
   xDS的基本术语：主机、上游、下游、监听器、集群、网格、运行时配置

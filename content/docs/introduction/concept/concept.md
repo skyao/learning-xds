@@ -1,7 +1,7 @@
 ---
 title: "xDS核心概念"
 linkTitle: "核心概念"
-weight: 1202
+weight: 20
 date: 2021-09-28
 description: >
   xDS的核心概念: 监听器、路由、集群和端点
@@ -34,32 +34,39 @@ xDS的术语中定义了主机、上游、下游等概念，这些是envoy作为
 
 ### Listener
 
-Listener：Envoy工作的基础
-简单理解，Listener是Envoy打开的一个监听端口，用于接收来自Downstream（客户端）连接。Envoy可以支持复数个Listener。多个Listener之间几乎所有的配置都是隔离的。Listener配置中核心包括监听地址、Filter链等。
+**Listener：Envoy工作的基础**
 
-Listener对应的配置/资源发现服务称之为LDS。LDS是Envoy正常工作的基础，没有LDS，Envoy就不能实现端口监听（如果启动配置也没有提供静态Listener的话），其他所有xDS服务也失去了作用。
+简单理解，Listener 是 Envoy 打开的一个监听端口，用于接收来自 Downstream（客户端）连接。Envoy可以支持多个Listener。多个Listener之间几乎所有的配置都是隔离的。Listener 配置的核心包括监听地址、Filter链等。
+
+Listener 对应的配置/资源发现服务称之为LDS。LDS 是 Envoy 正常工作的基础，没有 LDS，Envoy 就不能实现端口监听（如果启动配置也没有提供静态 Listener的话），其他所有 xDS 服务也失去了作用。
 
 ### Router
 
-Router：上下游之间的桥梁
-Listener可以接收来自下游的连接，Cluster可以将流量发送给具体的上游服务，而Router则决定Listener在接收到下游连接和数据之后，应该将数据交给哪一个Cluster处理。它定义了数据分发的规则。虽然说到Router大部分时候都可以默认理解为HTTP路由，但是Envoy支持多种协议，如Dubbo、Redis等，所以此处Router泛指所有用于桥接Listener和后端服务（不限定HTTP）的规则与资源集合。
+**Router：上下游之间的桥梁**
 
-Route对应的配置/资源发现服务称之为RDS。Router中最核心配置包含匹配规则和目标Cluster，此外，也可能包含重试、分流、限流等等。
+Listener 可以接收来自下游的连接，Cluster 可以将流量发送给具体的上游服务，而 Router 则决定 Listener 在接收到下游连接和数据之后，应该将数据交给哪一个 Cluster 处理。它定义了数据分发的规则。虽然说到 Router 大部分时候都可以默认理解为 HTTP 路由，但是 Envoy 支持多种协议，如 Dubbo、Redis 等，所以此处 Router 泛指所有用于桥接Listener和后端服务（不限定HTTP）的规则与资源集合。
+
+Route 对应的配置/资源发现服务称之为RDS。Router 中最核心的配置包含匹配规则和目标Cluster，此外，也可能包含重试、分流、限流等等。
 
 ### Cluster
 
-Cluster：对上游服务的抽象
-在Envoy中，每个Upstream上游服务都被抽象成一个Cluster。Cluster包含该服务的连接池、超时时间、endpoints地址、端口、类型（类型决定了Envoy获取该Cluster具体可以访问的endpoint方法）等等。
+**Cluster：对上游服务的抽象**
 
-Cluster对应的配置/资源发现服务称之为CDS。一般情况下，CDS服务会将其发现的所有可访问服务全量推送给Envoy。与CDS紧密相关的另一种服务称之为EDS。CDS服务负责Cluster资源的推送。而当该Cluster类型为EDS时，说明该Cluster的所有endpoints需要由xDS服务下发，而不使用DNS等去解析。下发endpoints的服务就称之为EDS。
+在 Envoy 中，每个 Upstream 上游服务都被抽象成一个 Cluster。Cluster 包含该服务的连接池、超时时间、endpoints 地址、端口、类型（类型决定了 Envoy 获取该 Cluster 具体可以访问的 endpoint 方法）等等。
+
+Cluster 对应的配置/资源发现服务称之为CDS。一般情况下，CDS服务会将其发现的所有可访问服务全量推送给Envoy。与CDS紧密相关的另一种服务称之为EDS。CDS服务负责Cluster资源的推送。而当该Cluster类型为EDS时，说明该Cluster的所有endpoints需要由xDS服务下发，而不使用DNS等去解析。下发endpoints的服务就称之为EDS。
 
 ### Endpoint
 
+**Endpoint：对上游主机的访问描述**
 
+Endpoint 是对 Cluster 中的每一个可供访问的 Host 的描述，典型如 IP地址 / 端口。
+
+Endpoint 对应的端点发现服务称之为 EDS。
 
 ## xDS和请求转发概念的对应关系
 
-在Envoy v2 API中，RDS路由指向集群，CDS提供集群配置，通过EDS发现集群成员。
+在 Envoy v2 API中，RDS路由指向集群，CDS提供集群配置，通过EDS发现集群成员。
 
 xDS API 示意图如下：
 

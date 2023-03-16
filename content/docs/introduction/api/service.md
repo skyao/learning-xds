@@ -1,7 +1,7 @@
 ---
 title: "xDS的服务定义"
 linkTitle: "服务定义"
-weight: 1402
+weight: 10
 date: 2021-09-30
 description: >
   xDS服务定义方式
@@ -11,9 +11,9 @@ description: >
 
 ## 通用模式
 
-### LDS/RDS/CDS/EDS
+### LDS/RDS/SRDS/CDS/EDS
 
-LDS/RDS/CDS/EDS 这四个xDS API的定义非常类似，模式都是一致的。
+LDS/RDS/SRDS/CDS/EDS 这几个 xDS API 的定义非常类似，模式都是一致的。
 
 LDS：
 
@@ -38,7 +38,7 @@ service ListenerDiscoveryService {
 }
 ```
 
-RDS：
+RDS ：
 
 https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/route/v3/rds.proto
 
@@ -56,6 +56,29 @@ service RouteDiscoveryService {
 
   rpc FetchRoutes(discovery.v3.DiscoveryRequest) returns (discovery.v3.DiscoveryResponse) {
     option (google.api.http).post = "/v3/discovery:routes";
+    option (google.api.http).body = "*";
+  }
+}
+```
+
+SRDS ：
+
+https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/route/v3/srds.proto
+
+```protobuf
+service ScopedRoutesDiscoveryService {
+  option (envoy.annotations.resource).type = "envoy.config.route.v3.ScopedRouteConfiguration";
+
+  rpc StreamScopedRoutes(stream discovery.v3.DiscoveryRequest)
+      returns (stream discovery.v3.DiscoveryResponse) {
+  }
+
+  rpc DeltaScopedRoutes(stream discovery.v3.DeltaDiscoveryRequest)
+      returns (stream discovery.v3.DeltaDiscoveryResponse) {
+  }
+
+  rpc FetchScopedRoutes(discovery.v3.DiscoveryRequest) returns (discovery.v3.DiscoveryResponse) {
+    option (google.api.http).post = "/v3/discovery:scoped-routes";
     option (google.api.http).body = "*";
   }
 }
@@ -92,6 +115,8 @@ https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/endpoint/v3/eds.
 service EndpointDiscoveryService {
   option (envoy.annotations.resource).type = "envoy.config.endpoint.v3.ClusterLoadAssignment";
 
+  // The resource_names field in DiscoveryRequest specifies a list of clusters
+  // to subscribe to updates for.
   rpc StreamEndpoints(stream discovery.v3.DiscoveryRequest)
       returns (stream discovery.v3.DiscoveryResponse) {
   }
@@ -107,7 +132,9 @@ service EndpointDiscoveryService {
 }
 ```
 
-LDS/RDS/CDS/EDS 这四个xDS API的定义方式是非常类似的：
+
+
+LDS/RDS/SRDS/CDS/EDS 这几个 xDS API 的 xDS API 的定义方式是非常类似的：
 
 - 都有一个单次调用的 `Fetch***()` 方法和一个gRPC双向流的 `Stream***()`方法，以及一个用于实现增量xDS的 `Delta***()`方法
 - 而且四个xDS API的这3个方法的参数和应答都是一样的：DiscoveryRequest / DiscoveryResponse / DeltaDiscoveryRequest / DeltaDiscoveryResponse

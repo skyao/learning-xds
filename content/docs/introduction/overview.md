@@ -1,7 +1,7 @@
 ---
 title: "xDS概述"
 linkTitle: "xDS概述"
-weight: 1101
+weight: 10
 date: 2021-09-28
 description: >
   介绍Envoy的XDS API
@@ -39,17 +39,23 @@ xDS 是指 "X Discovery Service"，这里的 "X" 代指多种服务发现协议�
 
 目前 xDS 主要有三个版本：
 
-- v1: 最早的版本，基于传统的REST-JSON API。
-- v2: 基于 Protobuf 和双 REST/gRPC ，v2 API在 2020 年底停止使用，在2021年初完全停止支持
+- v1: 最早的版本，基于传统的REST-JSON API。（目前已经不再使用）
+- v2: 基于 Protobuf 和双 REST/gRPC ，v2 API在 2020 年底停止使用，在2021年初完全停止支持。（目前已经不再使用）
 - v3: 目前正在支持的版本。
 
-参见：[Supported API versions — envoy 1.20.0 documentation (envoyproxy.io)](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)
+> 备注： 
+>
+> Per the additional information in the [versioning scheme](https://github.com/envoyproxy/envoy/blob/51825f04ad641bd6c7c8afd5a316260ef98bf223/api/API_VERSIONING.md#api-lifecycle), the v3 xDS is the final major version and will be supported forever.
+>
+> 根据版本计划中的附加信息，v3 xDS是最后的主要版本，将被永远支持。
+
+参见：envoy 官方文档 [Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)
 
 ### xDS的格式
 
 https://www.envoyproxy.io/docs/envoy/latest/configuration/overview/introduction
 
-Envoy xDS APIs在api树中被定义为proto3 Protocol Buffer。它们支持：
+Envoy xDS APIs 在 api 树中被定义为proto3 Protocol Buffer。它们支持：
 
 - 通过gRPC流式交付xDS API更新。这减少了资源需求，可以降低更新延迟。
 
@@ -62,3 +68,9 @@ Envoy xDS APIs在api树中被定义为proto3 Protocol Buffer。它们支持：
 - 需要时更强的一致性和排序属性。这些API仍然保持基线最终一致性模型。
 
 有关Envoy和管理服务器之间xDS消息交换方面的进一步细节，请参见xDS协议描述。
+
+### xDS的文档
+
+- https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol
+- https://github.com/cncf/xds
+
